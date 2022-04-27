@@ -2,15 +2,21 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
+using MovieList.pk.Database.Context;
+using MovieList.pk.Services.MovieService;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Pomelo.EntityFrameworkCore;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
+using System.Reflection;
 
 namespace MovieList.ws.webApi
 {
@@ -32,6 +38,14 @@ namespace MovieList.ws.webApi
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "MovieList.ws.webApi", Version = "v1" });
             });
+
+            services.AddAutoMapper(typeof(Startup).Assembly);
+            services.AddTransient<IMovieService, MovieService>();
+
+            services.AddDbContext<MovieDbContext>(op => op.UseMySql(
+                                this.Configuration.GetConnectionString("MySqlConnectionString"),
+                                ServerVersion.AutoDetect(this.Configuration.GetConnectionString("MySqlConnectionString"))));
+            services.AddScoped<MovieDbContext>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
